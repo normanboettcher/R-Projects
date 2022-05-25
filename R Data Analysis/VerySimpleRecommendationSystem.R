@@ -1,0 +1,59 @@
+library(utils)
+library(jsonlite)
+
+#inspired from Handbook 1 Big Data Engineering Data Science Council of America
+create_artist_query_url_lfm <- function(artist.name) {
+  prefix <- "http://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist="
+  postfix <- "&api_key=5075646ac58a83c2e351e6ea5ed497a4&format=json"
+  encoded.artist <- URLencode(artist.name)
+  return(paste0(prefix,encoded.artist, postfix))
+}
+
+get_tag_vector_lfm <- function(artist) {
+  artist_url <- create_artist_query_url_lfm(artist)
+  json <- fromJSON(artist_url)
+  return(json$toptags$tag$name)
+}
+
+jaccard_index <- function(set1, set2) {
+  length(intersect(set1, set2))/length(union(set1, set2))
+}
+
+similarity_matrix <- function(artist_list, similarity_fn) {
+  n <- length(artist_list)
+  #init n  by n matrix with zeros
+  sim_matrix <- matrix(0, ncol = n, nrow = n)
+  
+  #name rows and cols
+  rownames(sim_matrix) <- names(artist_list)
+  colnames(sim_matrix) <- names(artist_list)
+  
+  #for each row in the matrix
+  for(i in 1:nrow(sim_matrix)) {
+    #and each column
+    for(j in 1:ncol(sim_matrix)) {
+      #calculate similarity
+      the_index <- similarity_fn(artist_list[[i]], artist_list[[j]])
+      sim_matrix[i,j] <- round(the_index, 2)
+    }
+  }
+  return(sim_matrix)
+}
+
+create_artist_query_url_lfm("Depeche Mode")
+fromJSON(create_artist_query_url_lfm("Rammstein"))
+get_tag_vector_lfm("Rammstein")
+
+artists <- list("Eminem", "Rammstein", "Avril Lavigne", "The Offspring", "Slipknot", "Metallica")
+artists.tags <- lapply(artists, get_tag_vector_lfm)
+names(artists.tags) <- artists
+print(artists.tags)
+
+jaccard_index(artists.tags[["Rammstein"]], artists.tags[["Avril Lavgine"]])
+
+similarity.artists <- similarity_matrix(artists.tags, jaccard_index)
+print(similarity.artists)
+
+#print an order for recommendation for Rammstein
+similarity.artists[order(similarity.artists[,2], decreasing = TRUE), 2]
+

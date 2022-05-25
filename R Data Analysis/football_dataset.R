@@ -26,10 +26,10 @@ leagues <- fetch(dbSendQuery(con, 'select * from League'))
 leagues
 dbClearResult(leagues)
 
-germany_team_query <- paste(
-'select team_long_name as team, team_api_id as id from Team', 
+germany_team_query <- paste (
+'select count(team_long_name) as matches_count, team_long_name as team, team_api_id as id from Team', 
 'left join Match on Team.team_api_id = Match.home_team_api_id',
-'where Match.country_id = 7809 group by team_long_name'
+'where Match.country_id = 7809 group by team_long_name')
 
 teams_germany <- fetch(dbSendQuery(con, germany_team_query))
 teams_germany
