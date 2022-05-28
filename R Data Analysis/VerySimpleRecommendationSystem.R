@@ -4,7 +4,7 @@ library(jsonlite)
 #inspired from Handbook 1 Big Data Engineering Data Science Council of America
 create_artist_query_url_lfm <- function(artist.name) {
   prefix <- "http://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist="
-  postfix <- "&api_key=5075646ac58a83c2e351e6ea5ed497a4&format=json"
+  postfix <- "&api_key=&format=json"
   encoded.artist <- URLencode(artist.name)
   return(paste0(prefix,encoded.artist, postfix))
 }
